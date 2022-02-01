@@ -98,7 +98,7 @@ export class AuthService {
     if (!user || !user.hashedRt) throw new ForbiddenException("Usuário não encontrado");
 
     const matches = await argon.verify(user.hashedRt, refreshToken);
-    if (!matches) throw new ForbiddenException("Acesso negado");
+    if (!matches) throw new UnauthorizedException("Não foi possível obter o Refresh Token.");
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
