@@ -51,7 +51,7 @@ export class AuthService {
     }).catch((error) => {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002')
-          throw new ForbiddenException('Credenciais incorretas');
+          throw new ForbiddenException('Este e-mail já está sendo usado');
 
       }
       throw error;
@@ -95,10 +95,10 @@ export class AuthService {
       where: { id: userId }
     });
 
-    if (!user || !user.hashedRt) throw new ForbiddenException("Access Denied");
+    if (!user || !user.hashedRt) throw new ForbiddenException("Usuário não encontrado");
 
     const matches = await argon.verify(user.hashedRt, refreshToken);
-    if (!matches) throw new ForbiddenException("Access Denied");
+    if (!matches) throw new ForbiddenException("Acesso negado");
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
