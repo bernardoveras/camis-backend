@@ -4,6 +4,7 @@ import { AuthDTO } from './dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable()
 export class AuthService {
@@ -19,22 +20,16 @@ export class AuthService {
   async getTokens(userId: number, email: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        {
-          sub: userId,
-          email
-        },
+        { sub: userId, email },
         {
           secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
-          expiresIn: 60 * 15,
+          expiresIn: '15m',
         }),
       this.jwtService.signAsync(
-        {
-          sub: userId,
-          email
-        },
+        { sub: userId, email },
         {
           secret: process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
-          expiresIn: 60 * 60 * 24 * 7,
+          expiresIn: '7d',
         })
     ]);
 
@@ -55,12 +50,19 @@ export class AuthService {
   async signupLocal(dto: AuthDTO): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
 
-    const newUser = await this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: { email: dto.email, hash }
+    }).catch((error) => {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002')
+          throw new ForbiddenException('Credenciais incorretas');
+
+      }
+      throw error;
     });
 
-    const tokens = await this.getTokens(newUser.id, newUser.email);
-    await this.updateRefreshTokenHash(newUser.id, tokens.refresh_token);
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
     return tokens;
   }
 
@@ -69,7 +71,7 @@ export class AuthService {
       where: { email: dto.email }
     });
 
-    if (!user) throw new ForbiddenException("Access Token denied");
+    if (!user) throw new ForbiddenException("Access Denied");
 
     const passwordMatches = await bcrypt.compare(dto.password, user.hash);
     if (!passwordMatches) throw new UnauthorizedException("E-mail e/ou senha inválidos")
@@ -79,7 +81,31 @@ export class AuthService {
     return tokens;
   }
 
-  logout() { }
+  async logout(userId: number): Promise<boolean> {
+    await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        hashedRt: { not: null }
+      },
+      data: {
+        hashedRt: null,
+      }
+    });
+    return true;
+  }
 
-  refreshToken() { }
+  async refreshToken(userId: number, refreshToken: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !user.hashedRt) throw new ForbiddenException("Access Denied");
+
+    const matches = await bcrypt.compare(refreshToken, user.hashedRt);
+    if (!matches) throw new ForbiddenException("Access Denied");
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+    return tokens;
+  }
 }
