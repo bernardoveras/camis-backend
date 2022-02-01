@@ -20,4 +20,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleDestroy() {
     await this.$disconnect();
   }
+
+  async cleanDatabase() {
+    if (process.env.NODE_ENV === 'production') return;
+
+    return Promise.all([this.user.deleteMany()]);
+  }
 }

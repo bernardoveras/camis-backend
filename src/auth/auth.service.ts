@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDTO } from './dto';
-import * as bcrypt from 'bcrypt';
+import * as argon from 'argon2';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
@@ -12,10 +12,6 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) { }
-
-  async hashData(data: string) {
-    return await bcrypt.hash(data, 10);
-  }
 
   async getTokens(userId: number, email: string) {
     const [accessToken, refreshToken] = await Promise.all([
@@ -40,7 +36,7 @@ export class AuthService {
   }
 
   async updateRefreshTokenHash(userId: number, refreshToken: string) {
-    const hash = await this.hashData(refreshToken);
+    const hash = await argon.hash(refreshToken);
     await this.prisma.user.update({
       where: { id: userId },
       data: { hashedRt: hash }
@@ -48,7 +44,7 @@ export class AuthService {
   }
 
   async signupLocal(dto: AuthDTO): Promise<Tokens> {
-    const hash = await this.hashData(dto.password);
+    const hash = await argon.hash(dto.password);
 
     const user = await this.prisma.user.create({
       data: { email: dto.email, hash }
@@ -71,9 +67,9 @@ export class AuthService {
       where: { email: dto.email }
     });
 
-    if (!user) throw new ForbiddenException("Access Denied");
+    if (!user) throw new UnauthorizedException("E-mail e/ou senha inválidos")
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.hash);
+    const passwordMatches = await argon.verify(user.hash, dto.password);
     if (!passwordMatches) throw new UnauthorizedException("E-mail e/ou senha inválidos")
 
     const tokens = await this.getTokens(user.id, user.email);
@@ -101,7 +97,7 @@ export class AuthService {
 
     if (!user || !user.hashedRt) throw new ForbiddenException("Access Denied");
 
-    const matches = await bcrypt.compare(refreshToken, user.hashedRt);
+    const matches = await argon.verify(user.hashedRt, refreshToken);
     if (!matches) throw new ForbiddenException("Access Denied");
 
     const tokens = await this.getTokens(user.id, user.email);
