@@ -5,6 +5,16 @@
 [![Github last commit](https://img.shields.io/github/last-commit/bernardoveras/camis-backend)](https://github.com/bernardoveras/camis-backend/commits/master)
 
 -------
+
+<div align="center">
+
+**Languages:**
+
+[![English](https://img.shields.io/badge/Language-English-blueviolet?style=for-the-badge)](README.md)
+[![Portuguese](https://img.shields.io/badge/Language-Portuguese-blueviolet?style=for-the-badge)](README.pt-br.md)
+  
+</div>
+
 <p align="center">
     <a href="#motivation">Motivation</a> &bull;
     <a href="#installation">Installation</a> &bull;
