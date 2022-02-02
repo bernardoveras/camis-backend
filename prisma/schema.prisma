@@ -18,11 +18,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email    String  @unique
+  email String @unique
+  name  String
+
   hash     String
   hashedRt String?
 
-  tasks Task[]
+  tasks        Task[]
+  createdTasks Task[] @relation("owner")
 
   @@map("users")
 }
@@ -34,6 +37,9 @@ model Task {
 
   name   String
   status TaskStatus @default(Pending)
+
+  owner   User @relation("owner", fields: [ownerId], references: [id])
+  ownerId Int
 
   assignedBy   User?     @relation(fields: [assignedById], references: [id])
   assignedById Int?
@@ -51,6 +57,8 @@ model Skill {
 
   name  String
   tasks SkillsOnTasks[]
+
+  @@map("skills")
 }
 
 model SkillsOnTasks {
@@ -61,4 +69,5 @@ model SkillsOnTasks {
   taskId Int
 
   @@id([skillId, taskId])
+  @@map("skills_on_tasks")
 }

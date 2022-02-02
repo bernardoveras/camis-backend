@@ -30,6 +30,8 @@ This project is a REST API made in [TypeScript](https://www.typescriptlang.org) 
 
 ```bash
 $ git clone https://github.com/bernardoveras/camis-backend.git
+$ yarn install
+$ yarn start:dev
 ```
 
 ## Running

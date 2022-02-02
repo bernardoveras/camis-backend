@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDTO } from './dto';
+import { AuthDTO, CreateUserDTO } from './dto';
 import * as argon from 'argon2';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
@@ -13,16 +13,16 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) { }
 
-  async getTokens(userId: number, email: string) {
+  async getTokens(userId: number, email: string, name: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, name },
         {
           secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
           expiresIn: '15m',
         }),
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, name },
         {
           secret: process.env.JWT_REFRESH_TOKEN_SECRET_KEY,
           expiresIn: '7d',
@@ -43,21 +43,20 @@ export class AuthService {
     });
   }
 
-  async signupLocal(dto: AuthDTO): Promise<Tokens> {
+  async signupLocal(dto: CreateUserDTO): Promise<Tokens> {
     const hash = await argon.hash(dto.password);
 
     const user = await this.prisma.user.create({
-      data: { email: dto.email, hash }
+      data: { email: dto.email, name: dto.name, hash }
     }).catch((error) => {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002')
           throw new ForbiddenException('Este e-mail já está sendo usado');
-
       }
       throw error;
     });
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.name);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -72,7 +71,7 @@ export class AuthService {
     const passwordMatches = await argon.verify(user.hash, dto.password);
     if (!passwordMatches) throw new UnauthorizedException("E-mail e/ou senha inválidos")
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.name);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -87,7 +86,7 @@ export class AuthService {
     const matches = await argon.verify(user.hashedRt, refreshToken);
     if (!matches) throw new UnauthorizedException("Não foi possível obter o Refresh Token.");
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.name);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
     return tokens;
   }

@@ -6,9 +6,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   constructor() {
     super({
       datasources: {
-        db: {
-          url: process.env.DATABASE_URL,
-        }
+        db: { url: process.env.DATABASE_URL }
       }
     });
   }
@@ -24,6 +22,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async cleanDatabase() {
     if (process.env.NODE_ENV === 'production') return;
 
-    return Promise.all([this.user.deleteMany()]);
+    return Promise.all([
+      this.user.deleteMany(),
+      this.task.deleteMany(),
+      this.skill.deleteMany(),
+      this.skillsOnTasks.deleteMany(),
+    ]);
   }
 }
