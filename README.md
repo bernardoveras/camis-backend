@@ -11,7 +11,7 @@
 **Languages:**
 
 [![English](https://img.shields.io/badge/Language-English-7159C1?style=for-the-badge)](README.md)
-[![Portuguese](https://img.shields.io/badge/Language-Portuguese-7159C1?style=for-the-badge)](README.pt-br.md)
+[![Portuguese](https://img.shields.io/badge/Language-Portuguese-7159C1?style=for-the-badge)](README-pt-br.md)
   
 </div>
 
