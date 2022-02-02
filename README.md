@@ -1,4 +1,4 @@
-# Camis.io API
+<img src=".github/header.png" alt="camis.io header" style="width:100%;"/>
 
 [![Github issues](https://img.shields.io/github/issues/bernardoveras/camis-backend)](https://github.com/bernardoveras/camis-backend/issues)
 [![Github stars](https://img.shields.io/github/stars/bernardoveras/camis-backend)](https://github.com/bernardoveras/camis-backend/stargazers)
