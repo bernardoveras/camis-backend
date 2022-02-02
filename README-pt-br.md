@@ -38,6 +38,8 @@ $ git clone https://github.com/bernardoveras/camis-backend.git
 
 ```bash
 # desenvolvimento
+$ git clone https://github.com/bernardoveras/camis-backend.git
+$ yarn install
 $ yarn start:dev
 ```
 
