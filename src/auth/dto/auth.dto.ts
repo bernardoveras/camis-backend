@@ -1,11 +1,11 @@
 import { IsEmail, isNotEmpty, IsNotEmpty, IsString } from "class-validator";
 
-export class AuthDTO{
-  @IsNotEmpty()
-  @IsEmail()
+export class AuthDTO {
+  @IsNotEmpty({ message: "Informe um e-mail" })
+  @IsEmail({}, { message: "Informe um e-mail válido" })
   email: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Informe uma senha" })
   @IsString()
   password: string;
 }
