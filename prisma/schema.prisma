@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TaskStatus {
+  Pending
+  InProgress
+  Done
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -16,5 +22,43 @@ model User {
   hash     String
   hashedRt String?
 
+  tasks Task[]
+
   @@map("users")
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name   String
+  status TaskStatus @default(Pending)
+
+  assignedBy   User?     @relation(fields: [assignedById], references: [id])
+  assignedById Int?
+  assignedAt   DateTime?
+
+  skills SkillsOnTasks[]
+
+  @@map("tasks")
+}
+
+model Skill {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name  String
+  tasks SkillsOnTasks[]
+}
+
+model SkillsOnTasks {
+  skill   Skill @relation(fields: [skillId], references: [id])
+  skillId Int
+
+  task   Task @relation(fields: [taskId], references: [id])
+  taskId Int
+
+  @@id([skillId, taskId])
 }
