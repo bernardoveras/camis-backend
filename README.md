@@ -14,7 +14,7 @@
 </p>
 
 ## Motivation
-This project is a REST API made in TypeScript (JavaScript superset) using the framework [NestJS](https://nestjs.com) with the PostgreSQL database using [Prisma ORM.](https://prisma.io)
+This project is a REST API made in [TypeScript](https://www.typescriptlang.org) (JavaScript superset) using the framework [NestJS](https://nestjs.com) with the [PostgreSQL](https://www.postgresql.org) database using [Prisma ORM.](https://prisma.io)
 
 ## Installation
 
