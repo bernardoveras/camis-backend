@@ -18,26 +18,22 @@ This project is a REST API made in TypeScript (JavaScript superset) using the fr
 
 ## Installation
 
-- Clonning the repository
-
 ```bash
 $ git clone https://github.com/bernardoveras/camis-backend.git
 ```
 
 ## Running
 
-- Starting commands
+- The server is running on port 3333.
 
 ```bash
 # development
 $ yarn start:dev
 ```
 
-- The server is running on port 3333.
-
 ## Routes
 
-Todas as rotas estão documentadas no Swagger, na seguinte rota:
+All routes are documented in Swagger, in the following route:
 
 `http://localhost:3333/docs`
 
